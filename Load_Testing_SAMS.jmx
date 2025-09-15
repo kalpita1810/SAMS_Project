@@ -2,7 +2,7 @@
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Load Testing">
-      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments">
           <elementProp name="org" elementType="Argument">
@@ -33,7 +33,6 @@
         </collectionProp>
       </elementProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
-      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="SAMS_Load_Testing">
@@ -201,8 +200,17 @@
             <stringProp name="JSONPostProcessor.defaultValues">Not_found</stringProp>
           </JSONPostProcessor>
           <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract_token_globally" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">def extractedtoken = vars.get(&quot;token&quot;)
+props.put(&quot;shared_token&quot;, extractedtoken)</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request_Initiate_search" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Sams_load_testing">
           <intProp name="HTTPSampler.concurrentPool">6</intProp>
           <stringProp name="HTTPSampler.domain">${url}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
@@ -310,7 +318,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">Bearer ${token}</stringProp>
+                <stringProp name="Header.value">Bearer ${__P(shared_token)}</stringProp>
               </elementProp>
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Org</stringProp>
@@ -359,6 +367,98 @@
             </objProp>
             <stringProp name="filename"></stringProp>
           </ResultCollector>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request_API_Key" enabled="true">
+          <stringProp name="HTTPSampler.domain">api.django.v3.sams-solytics.com</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/preprod/auth/api-key/</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${user_name}&quot;,&#xd;
+    &quot;expiry_date&quot;: &quot;2060-10-10&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${__P(shared_token)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Org</stringProp>
+                <stringProp name="Header.value">${org}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract_API" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">api</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.key</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Extract_api_key_globally" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">def extractedapi = vars.get(&quot;api&quot;)
+props.put(&quot;shared_api&quot;, extractedapi)</stringProp>
+          </JSR223PostProcessor>
           <hashTree/>
         </hashTree>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
@@ -462,6 +562,1832 @@
               <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
               <assertionsResultsToSave>0</assertionsResultsToSave>
               <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Fast-Api SYNC">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
+        <longProp name="ThreadGroup.duration">1</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Fast_api_sync">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.domain">v3.api.preprod.sams-solytics.com</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/aml-searches/v1/</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;screen_type&quot;: &quot;ongoing&quot;,&#xd;
+    &quot;search_type&quot;: &quot;individual&quot;,&#xd;
+    &quot;sanction_field&quot;: true,&#xd;
+    &quot;pep_field&quot;: true,&#xd;
+    &quot;ams_field&quot;: true,&#xd;
+    &quot;frequency&quot;: &quot;2&quot;,&#xd;
+    &quot;end_date&quot;: &quot;2026-11-25&quot;,&#xd;
+    &quot;rule_id&quot;: {&#xd;
+        &quot;AMS&quot;: [],&#xd;
+        &quot;PEP&quot;: [],&#xd;
+        &quot;sanctions&quot;: []&#xd;
+    },&#xd;
+    &quot;legal_field&quot;: false,&#xd;
+    &quot;corporate_field&quot;: false,&#xd;
+    &quot;name&quot;: &quot;Abdul Sattar&quot;,&#xd;
+    &quot;gender&quot;: &quot;Male&quot;,&#xd;
+    &quot;date_of_birth&quot;: &quot;1964-07-26&quot;,&#xd;
+    &quot;aliases&quot;: &quot;&quot;,&#xd;
+    &quot;email&quot;: &quot;&quot;,&#xd;
+    &quot;nationality&quot;: &quot;&quot;,&#xd;
+    &quot;country&quot;: &quot;&quot;,&#xd;
+    &quot;country_of_jurisdiction&quot;: &quot;&quot;,&#xd;
+    &quot;zipcode&quot;: &quot;&quot;,&#xd;
+    &quot;address&quot;: &quot;&quot;,&#xd;
+    &quot;national_id&quot;: &quot;&quot;,&#xd;
+    &quot;voter_id&quot;: &quot;&quot;,&#xd;
+    &quot;passport_number&quot;: &quot;&quot;,&#xd;
+    &quot;pan&quot;: &quot;&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;&quot;,&#xd;
+    &quot;applicant_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;application_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;sfdc_lead_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;branch_name&quot;: &quot;bangalore&quot;,&#xd;
+    &quot;product_line&quot;: &quot;123&quot;,&#xd;
+    &quot;pennant_analyst_name&quot;: &quot;manager_sams&quot;,&#xd;
+    &quot;analyst_email_id&quot;: &quot;sams@solytics-partners.com&quot;,&#xd;
+    &quot;other_fields&quot;: {&#xd;
+        &quot;field1&quot;: &quot;&quot;,&#xd;
+        &quot;field2&quot;: &quot;&quot;,&#xd;
+        &quot;field3&quot;: &quot;&quot;&#xd;
+    },&#xd;
+    &quot;target_date&quot;: &quot;2026-04-21&quot;,&#xd;
+    &quot;risk_rating_field&quot;: false,&#xd;
+    &quot;age&quot;: &quot;20&quot;,&#xd;
+    &quot;occupation&quot;: &quot;Accountants and Auditors&quot;,&#xd;
+    &quot;income&quot;: &quot;25000&quot;,&#xd;
+    &quot;product&quot;: &quot;Savings Account Plus&quot;,&#xd;
+    &quot;onboarding_duration&quot;: &quot;32&quot;,&#xd;
+    &quot;onboarding_type&quot;: &quot;Face-to-face Onboarding&quot;,&#xd;
+    &quot;missed_payment&quot;: &quot;5&quot;,&#xd;
+    &quot;industry&quot;: &quot;Business&quot;,&#xd;
+    &quot;incorporation&quot;: &quot;10&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">HTTPBearer</stringProp>
+                <stringProp name="Header.value">Api-Key ${__P(shared_api)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Org</stringProp>
+                <stringProp name="Header.value">${org}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>true</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <sentBytes>true</sentBytes>
+                <url>true</url>
+                <threadCounts>true</threadCounts>
+                <idleTime>true</idleTime>
+                <connectTime>true</connectTime>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Fast-Api SYNC V2">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
+        <longProp name="ThreadGroup.duration">1</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Fast_api_sync_v2">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.domain">v3.api.preprod.sams-solytics.com</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/aml-searches/v2/</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;screen_type&quot;: &quot;ongoing&quot;,&#xd;
+    &quot;search_type&quot;: &quot;individual&quot;,&#xd;
+    &quot;sanction_field&quot;: true,&#xd;
+    &quot;pep_field&quot;: true,&#xd;
+    &quot;ams_field&quot;: true,&#xd;
+    &quot;frequency&quot;: &quot;2&quot;,&#xd;
+    &quot;end_date&quot;: &quot;2026-11-25&quot;,&#xd;
+    &quot;rule_id&quot;: {&#xd;
+        &quot;AMS&quot;: [],&#xd;
+        &quot;PEP&quot;: [],&#xd;
+        &quot;sanctions&quot;: []&#xd;
+    },&#xd;
+    &quot;legal_field&quot;: false,&#xd;
+    &quot;corporate_field&quot;: false,&#xd;
+    &quot;name&quot;: &quot;Abdul Sattar&quot;,&#xd;
+    &quot;gender&quot;: &quot;Male&quot;,&#xd;
+    &quot;date_of_birth&quot;: &quot;1964-07-26&quot;,&#xd;
+    &quot;aliases&quot;: &quot;&quot;,&#xd;
+    &quot;email&quot;: &quot;&quot;,&#xd;
+    &quot;nationality&quot;: &quot;&quot;,&#xd;
+    &quot;country&quot;: &quot;&quot;,&#xd;
+    &quot;country_of_jurisdiction&quot;: &quot;&quot;,&#xd;
+    &quot;zipcode&quot;: &quot;&quot;,&#xd;
+    &quot;address&quot;: &quot;&quot;,&#xd;
+    &quot;national_id&quot;: &quot;&quot;,&#xd;
+    &quot;voter_id&quot;: &quot;&quot;,&#xd;
+    &quot;passport_number&quot;: &quot;&quot;,&#xd;
+    &quot;pan&quot;: &quot;&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;&quot;,&#xd;
+    &quot;applicant_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;application_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;sfdc_lead_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;branch_name&quot;: &quot;bangalore&quot;,&#xd;
+    &quot;product_line&quot;: &quot;123&quot;,&#xd;
+    &quot;pennant_analyst_name&quot;: &quot;manager_sams&quot;,&#xd;
+    &quot;analyst_email_id&quot;: &quot;sams@solytics-partners.com&quot;,&#xd;
+    &quot;other_fields&quot;: {&#xd;
+        &quot;field1&quot;: &quot;&quot;,&#xd;
+        &quot;field2&quot;: &quot;&quot;,&#xd;
+        &quot;field3&quot;: &quot;&quot;&#xd;
+    },&#xd;
+    &quot;target_date&quot;: &quot;2026-04-21&quot;,&#xd;
+    &quot;risk_rating_field&quot;: false,&#xd;
+    &quot;age&quot;: &quot;20&quot;,&#xd;
+    &quot;occupation&quot;: &quot;Accountants and Auditors&quot;,&#xd;
+    &quot;income&quot;: &quot;25000&quot;,&#xd;
+    &quot;product&quot;: &quot;Savings Account Plus&quot;,&#xd;
+    &quot;onboarding_duration&quot;: &quot;32&quot;,&#xd;
+    &quot;onboarding_type&quot;: &quot;Face-to-face Onboarding&quot;,&#xd;
+    &quot;missed_payment&quot;: &quot;5&quot;,&#xd;
+    &quot;industry&quot;: &quot;Business&quot;,&#xd;
+    &quot;incorporation&quot;: &quot;10&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">HTTPBearer</stringProp>
+                <stringProp name="Header.value">Api-Key ${__P(shared_api)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Org</stringProp>
+                <stringProp name="Header.value">${org}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Fast-Api ASYNC">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
+        <longProp name="ThreadGroup.duration">1</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Fast_api_async">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.domain">v3.api.preprod.sams-solytics.com</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/aml-searches/v1/async</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;screen_type&quot;: &quot;ongoing&quot;,&#xd;
+    &quot;search_type&quot;: &quot;individual&quot;,&#xd;
+    &quot;sanction_field&quot;: true,&#xd;
+    &quot;pep_field&quot;: true,&#xd;
+    &quot;ams_field&quot;: true,&#xd;
+    &quot;frequency&quot;: &quot;2&quot;,&#xd;
+    &quot;end_date&quot;: &quot;2026-11-25&quot;,&#xd;
+    &quot;rule_id&quot;: {&#xd;
+        &quot;AMS&quot;: [],&#xd;
+        &quot;PEP&quot;: [],&#xd;
+        &quot;sanctions&quot;: []&#xd;
+    },&#xd;
+    &quot;legal_field&quot;: false,&#xd;
+    &quot;corporate_field&quot;: false,&#xd;
+    &quot;name&quot;: &quot;Abdul Sattar&quot;,&#xd;
+    &quot;gender&quot;: &quot;Male&quot;,&#xd;
+    &quot;date_of_birth&quot;: &quot;1964-07-26&quot;,&#xd;
+    &quot;aliases&quot;: &quot;&quot;,&#xd;
+    &quot;email&quot;: &quot;&quot;,&#xd;
+    &quot;nationality&quot;: &quot;&quot;,&#xd;
+    &quot;country&quot;: &quot;&quot;,&#xd;
+    &quot;country_of_jurisdiction&quot;: &quot;&quot;,&#xd;
+    &quot;zipcode&quot;: &quot;&quot;,&#xd;
+    &quot;address&quot;: &quot;&quot;,&#xd;
+    &quot;national_id&quot;: &quot;&quot;,&#xd;
+    &quot;voter_id&quot;: &quot;&quot;,&#xd;
+    &quot;passport_number&quot;: &quot;&quot;,&#xd;
+    &quot;pan&quot;: &quot;&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;&quot;,&#xd;
+    &quot;applicant_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;application_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;sfdc_lead_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;branch_name&quot;: &quot;bangalore&quot;,&#xd;
+    &quot;product_line&quot;: &quot;123&quot;,&#xd;
+    &quot;pennant_analyst_name&quot;: &quot;manager_sams&quot;,&#xd;
+    &quot;analyst_email_id&quot;: &quot;sams@solytics-partners.com&quot;,&#xd;
+    &quot;other_fields&quot;: {&#xd;
+        &quot;field1&quot;: &quot;&quot;,&#xd;
+        &quot;field2&quot;: &quot;&quot;,&#xd;
+        &quot;field3&quot;: &quot;&quot;&#xd;
+    },&#xd;
+    &quot;target_date&quot;: &quot;2026-04-21&quot;,&#xd;
+    &quot;risk_rating_field&quot;: false,&#xd;
+    &quot;age&quot;: &quot;20&quot;,&#xd;
+    &quot;occupation&quot;: &quot;Accountants and Auditors&quot;,&#xd;
+    &quot;income&quot;: &quot;25000&quot;,&#xd;
+    &quot;product&quot;: &quot;Savings Account Plus&quot;,&#xd;
+    &quot;onboarding_duration&quot;: &quot;32&quot;,&#xd;
+    &quot;onboarding_type&quot;: &quot;Face-to-face Onboarding&quot;,&#xd;
+    &quot;missed_payment&quot;: &quot;5&quot;,&#xd;
+    &quot;industry&quot;: &quot;Business&quot;,&#xd;
+    &quot;incorporation&quot;: &quot;10&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">HTTPBearer</stringProp>
+                <stringProp name="Header.value">Api-Key ${__P(shared_api)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Org</stringProp>
+                <stringProp name="Header.value">${org}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Fast-Api TS">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
+        <longProp name="ThreadGroup.duration">1</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Fast_api_ts">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.domain">v3.api.preprod.sams-solytics.com</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">aml-searches/v1/transaction-screening</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;screen_type&quot;: &quot;initial&quot;,&#xd;
+  &quot;sanction_field&quot;: true,&#xd;
+  &quot;pep_field&quot;: true,&#xd;
+  &quot;ams_field&quot;: true,&#xd;
+  &quot;target_date&quot;: &quot;2028-04-21&quot;,&#xd;
+  &quot;end_date&quot;: &quot;2028-11-25&quot;,&#xd;
+  &quot;frequency&quot;: &quot;1&quot;,&#xd;
+  &quot;transaction_id&quot;: &quot;aty234343cc&quot;,&#xd;
+  &quot;transaction_type&quot;: &quot;SWIFT&quot;,&#xd;
+  &quot;channel&quot;: &quot;Online Banking&quot;,&#xd;
+  &quot;product&quot;: &quot;CreditPay&quot;,&#xd;
+  &quot;amount&quot;: &quot;2000&quot;,&#xd;
+  &quot;currency&quot;: &quot;USD&quot;,&#xd;
+  &quot;transaction_date&quot;: &quot;2023-04-21&quot;,&#xd;
+  &quot;message_id&quot;: &quot;MSG123456&quot;,&#xd;
+  &quot;bank_identifier_code&quot;: &quot;BKID0001234&quot;,&#xd;
+  &quot;intermediary_bank_name&quot;: &quot;Intermediary Bank&quot;,&#xd;
+  &quot;postal_address&quot;: &quot;123 Main St, City, Country&quot;,&#xd;
+  &quot;financial_institution_id&quot;: &quot;FI123456&quot;,&#xd;
+  &quot;payer_details&quot;: {&#xd;
+    &quot;name&quot;: &quot;Abdul Sattar&quot;,&#xd;
+    &quot;search_type&quot;: &quot;individual&quot;,&#xd;
+    &quot;gender&quot;: &quot;Male&quot;,&#xd;
+    &quot;date_of_birth&quot;: &quot;1964-07-26&quot;,&#xd;
+    &quot;aliases&quot;: &quot;&quot;,&#xd;
+    &quot;email&quot;: &quot;&quot;,&#xd;
+    &quot;nationality&quot;: &quot;&quot;,&#xd;
+    &quot;pan&quot;: &quot;&quot;,&#xd;
+    &quot;country&quot;: &quot;Pakistan&quot;,&#xd;
+    &quot;city&quot;: &quot;&quot;,&#xd;
+    &quot;state&quot;: &quot;&quot;,&#xd;
+    &quot;country_of_jurisdiction&quot;: &quot;Pakistan&quot;,&#xd;
+    &quot;zip_code&quot;: &quot;431302&quot;,&#xd;
+    &quot;address&quot;: &quot;Pakistan&quot;,&#xd;
+    &quot;national_id&quot;: &quot;&quot;,&#xd;
+    &quot;driving_license&quot;: &quot;HD5HSK44LH&quot;,&#xd;
+    &quot;passport_number&quot;: &quot;AM5421691&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;&quot;,&#xd;
+    &quot;kycID&quot;: &quot;&quot;,&#xd;
+    &quot;ssn&quot;: &quot;078-05-1120&quot;,&#xd;
+    &quot;tin&quot;: &quot;&quot;,&#xd;
+    &quot;cin&quot;: &quot;&quot;,&#xd;
+    &quot;isin&quot;: &quot;&quot;,&#xd;
+    &quot;gst&quot;: &quot;&quot;,&#xd;
+    &quot;headquarter&quot;: &quot;&quot;,&#xd;
+    &quot;other_fields&quot;: {&#xd;
+      &quot;field1&quot;: &quot;&quot;,&#xd;
+      &quot;field2&quot;: &quot;&quot;,&#xd;
+      &quot;field3&quot;: &quot;&quot;&#xd;
+    },&#xd;
+    &quot;account_number&quot;: &quot;12345678909876&quot;,&#xd;
+    &quot;ifsc_code&quot;: &quot;ABCD0123454&quot;,&#xd;
+    &quot;bank_name&quot;: &quot;&quot;,&#xd;
+    &quot;vessel_type&quot;: &quot;&quot;,&#xd;
+    &quot;registered_owner&quot;: &quot;&quot;,&#xd;
+    &quot;parent_company&quot;: &quot;&quot;,&#xd;
+    &quot;imo&quot;: &quot;&quot;,&#xd;
+    &quot;mmsi&quot;: &quot;&quot;,&#xd;
+    &quot;flag_state&quot;: &quot;&quot;,&#xd;
+    &quot;operator&quot;: &quot;&quot;,&#xd;
+    &quot;manufacture_serial_number&quot;: &quot;&quot;,&#xd;
+    &quot;construction_number&quot;: &quot;&quot;,&#xd;
+    &quot;program&quot;: &quot;&quot;,&#xd;
+    &quot;aircraft_model&quot;: &quot;&quot;,&#xd;
+    &quot;is_transaction_excluded&quot;: false&#xd;
+  },&#xd;
+  &quot;recipient_details&quot;: {&#xd;
+    &quot;name&quot;: &quot;sunidhi sharma&quot;,&#xd;
+    &quot;search_type&quot;: &quot;individual&quot;,&#xd;
+    &quot;gender&quot;: &quot;Male&quot;,&#xd;
+    &quot;date_of_birth&quot;: &quot;1964-07-26&quot;,&#xd;
+    &quot;aliases&quot;: &quot;&quot;,&#xd;
+    &quot;email&quot;: &quot;&quot;,&#xd;
+    &quot;nationality&quot;: &quot;&quot;,&#xd;
+    &quot;pan&quot;: &quot;&quot;,&#xd;
+    &quot;country&quot;: &quot;Pakistan&quot;,&#xd;
+    &quot;city&quot;: &quot;&quot;,&#xd;
+    &quot;state&quot;: &quot;&quot;,&#xd;
+    &quot;country_of_jurisdiction&quot;: &quot;Pakistan&quot;,&#xd;
+    &quot;zip_code&quot;: &quot;431302&quot;,&#xd;
+    &quot;address&quot;: &quot;Pakistan&quot;,&#xd;
+    &quot;national_id&quot;: &quot;&quot;,&#xd;
+    &quot;driving_license&quot;: &quot;HD5HSK44LH&quot;,&#xd;
+    &quot;passport_number&quot;: &quot;AM5421691&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;&quot;,&#xd;
+    &quot;kycID&quot;: &quot;&quot;,&#xd;
+    &quot;ssn&quot;: &quot;078-05-1120&quot;,&#xd;
+    &quot;tin&quot;: &quot;&quot;,&#xd;
+    &quot;cin&quot;: &quot;&quot;,&#xd;
+    &quot;isin&quot;: &quot;&quot;,&#xd;
+    &quot;gst&quot;: &quot;&quot;,&#xd;
+    &quot;headquarter&quot;: &quot;&quot;,&#xd;
+    &quot;other_fields&quot;: {&#xd;
+      &quot;field1&quot;: &quot;&quot;,&#xd;
+      &quot;field2&quot;: &quot;&quot;,&#xd;
+      &quot;field3&quot;: &quot;&quot;&#xd;
+    },&#xd;
+    &quot;account_number&quot;: &quot;12345678909876&quot;,&#xd;
+    &quot;ifsc_code&quot;: &quot;ABCD0123454&quot;,&#xd;
+    &quot;bank_name&quot;: &quot;&quot;,&#xd;
+    &quot;vessel_type&quot;: &quot;&quot;,&#xd;
+    &quot;registered_owner&quot;: &quot;&quot;,&#xd;
+    &quot;parent_company&quot;: &quot;&quot;,&#xd;
+    &quot;imo&quot;: &quot;&quot;,&#xd;
+    &quot;mmsi&quot;: &quot;&quot;,&#xd;
+    &quot;flag_state&quot;: &quot;&quot;,&#xd;
+    &quot;operator&quot;: &quot;&quot;,&#xd;
+    &quot;manufacture_serial_number&quot;: &quot;&quot;,&#xd;
+    &quot;construction_number&quot;: &quot;&quot;,&#xd;
+    &quot;program&quot;: &quot;&quot;,&#xd;
+    &quot;aircraft_model&quot;: &quot;&quot;,&#xd;
+    &quot;is_transaction_excluded&quot;: false&#xd;
+  }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">HTTPBearer</stringProp>
+                <stringProp name="Header.value">Api-Key ${__P(shared_api)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Org</stringProp>
+                <stringProp name="Header.value">${org}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Django ASYNC">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
+        <longProp name="ThreadGroup.duration">1</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Django_aysnc">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.domain">v3.api.preprod.sams-solytics.com</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">async-search-initiate/</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;screen_type&quot;: &quot;ongoing&quot;,&#xd;
+    &quot;search_type&quot;: &quot;individual&quot;,&#xd;
+    &quot;sanction_field&quot;: true,&#xd;
+    &quot;pep_field&quot;: true,&#xd;
+    &quot;ams_field&quot;: true,&#xd;
+    &quot;frequency&quot;: &quot;2&quot;,&#xd;
+    &quot;end_date&quot;: &quot;2026-11-25&quot;,&#xd;
+    &quot;rule_id&quot;: {&#xd;
+        &quot;AMS&quot;: [],&#xd;
+        &quot;PEP&quot;: [],&#xd;
+        &quot;sanctions&quot;: []&#xd;
+    },&#xd;
+    &quot;legal_field&quot;: false,&#xd;
+    &quot;corporate_field&quot;: false,&#xd;
+    &quot;name&quot;: &quot;Abdul Sattar&quot;,&#xd;
+    &quot;gender&quot;: &quot;Male&quot;,&#xd;
+    &quot;date_of_birth&quot;: &quot;1964-07-26&quot;,&#xd;
+    &quot;aliases&quot;: &quot;&quot;,&#xd;
+    &quot;email&quot;: &quot;&quot;,&#xd;
+    &quot;nationality&quot;: &quot;&quot;,&#xd;
+    &quot;country&quot;: &quot;&quot;,&#xd;
+    &quot;country_of_jurisdiction&quot;: &quot;&quot;,&#xd;
+    &quot;zipcode&quot;: &quot;&quot;,&#xd;
+    &quot;address&quot;: &quot;&quot;,&#xd;
+    &quot;national_id&quot;: &quot;&quot;,&#xd;
+    &quot;voter_id&quot;: &quot;&quot;,&#xd;
+    &quot;passport_number&quot;: &quot;&quot;,&#xd;
+    &quot;pan&quot;: &quot;&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;&quot;,&#xd;
+    &quot;applicant_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;application_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;sfdc_lead_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;branch_name&quot;: &quot;bangalore&quot;,&#xd;
+    &quot;product_line&quot;: &quot;123&quot;,&#xd;
+    &quot;pennant_analyst_name&quot;: &quot;manager_sams&quot;,&#xd;
+    &quot;analyst_email_id&quot;: &quot;sams@solytics-partners.com&quot;,&#xd;
+    &quot;other_fields&quot;: {&#xd;
+        &quot;field1&quot;: &quot;&quot;,&#xd;
+        &quot;field2&quot;: &quot;&quot;,&#xd;
+        &quot;field3&quot;: &quot;&quot;&#xd;
+    },&#xd;
+    &quot;target_date&quot;: &quot;2026-04-21&quot;,&#xd;
+    &quot;risk_rating_field&quot;: false,&#xd;
+    &quot;age&quot;: &quot;20&quot;,&#xd;
+    &quot;occupation&quot;: &quot;Accountants and Auditors&quot;,&#xd;
+    &quot;income&quot;: &quot;25000&quot;,&#xd;
+    &quot;product&quot;: &quot;Savings Account Plus&quot;,&#xd;
+    &quot;onboarding_duration&quot;: &quot;32&quot;,&#xd;
+    &quot;onboarding_type&quot;: &quot;Face-to-face Onboarding&quot;,&#xd;
+    &quot;missed_payment&quot;: &quot;5&quot;,&#xd;
+    &quot;industry&quot;: &quot;Business&quot;,&#xd;
+    &quot;incorporation&quot;: &quot;10&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Api-Key ${__P(shared_api)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Org</stringProp>
+                <stringProp name="Header.value">${org}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Django SYNC">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">60</intProp>
+        <longProp name="ThreadGroup.duration">1</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Django_sync">
+          <intProp name="HTTPSampler.concurrentPool">6</intProp>
+          <stringProp name="HTTPSampler.domain">v3.api.preprod.sams-solytics.com</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">initiate/</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;screen_type&quot;: &quot;ongoing&quot;,&#xd;
+    &quot;search_type&quot;: &quot;individual&quot;,&#xd;
+    &quot;sanction_field&quot;: true,&#xd;
+    &quot;pep_field&quot;: true,&#xd;
+    &quot;ams_field&quot;: true,&#xd;
+    &quot;frequency&quot;: &quot;2&quot;,&#xd;
+    &quot;end_date&quot;: &quot;2026-11-25&quot;,&#xd;
+    &quot;rule_id&quot;: {&#xd;
+        &quot;AMS&quot;: [],&#xd;
+        &quot;PEP&quot;: [],&#xd;
+        &quot;sanctions&quot;: []&#xd;
+    },&#xd;
+    &quot;legal_field&quot;: false,&#xd;
+    &quot;corporate_field&quot;: false,&#xd;
+    &quot;name&quot;: &quot;Abdul Sattar&quot;,&#xd;
+    &quot;gender&quot;: &quot;Male&quot;,&#xd;
+    &quot;date_of_birth&quot;: &quot;1964-07-26&quot;,&#xd;
+    &quot;aliases&quot;: &quot;&quot;,&#xd;
+    &quot;email&quot;: &quot;&quot;,&#xd;
+    &quot;nationality&quot;: &quot;&quot;,&#xd;
+    &quot;country&quot;: &quot;&quot;,&#xd;
+    &quot;country_of_jurisdiction&quot;: &quot;&quot;,&#xd;
+    &quot;zipcode&quot;: &quot;&quot;,&#xd;
+    &quot;address&quot;: &quot;&quot;,&#xd;
+    &quot;national_id&quot;: &quot;&quot;,&#xd;
+    &quot;voter_id&quot;: &quot;&quot;,&#xd;
+    &quot;passport_number&quot;: &quot;&quot;,&#xd;
+    &quot;pan&quot;: &quot;&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;&quot;,&#xd;
+    &quot;applicant_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;application_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;sfdc_lead_id&quot;: &quot;uhi4hi-3safdsa3-asdfj&quot;,&#xd;
+    &quot;branch_name&quot;: &quot;bangalore&quot;,&#xd;
+    &quot;product_line&quot;: &quot;123&quot;,&#xd;
+    &quot;pennant_analyst_name&quot;: &quot;manager_sams&quot;,&#xd;
+    &quot;analyst_email_id&quot;: &quot;sams@solytics-partners.com&quot;,&#xd;
+    &quot;other_fields&quot;: {&#xd;
+        &quot;field1&quot;: &quot;&quot;,&#xd;
+        &quot;field2&quot;: &quot;&quot;,&#xd;
+        &quot;field3&quot;: &quot;&quot;&#xd;
+    },&#xd;
+    &quot;target_date&quot;: &quot;2026-04-21&quot;,&#xd;
+    &quot;risk_rating_field&quot;: false,&#xd;
+    &quot;age&quot;: &quot;20&quot;,&#xd;
+    &quot;occupation&quot;: &quot;Accountants and Auditors&quot;,&#xd;
+    &quot;income&quot;: &quot;25000&quot;,&#xd;
+    &quot;product&quot;: &quot;Savings Account Plus&quot;,&#xd;
+    &quot;onboarding_duration&quot;: &quot;32&quot;,&#xd;
+    &quot;onboarding_type&quot;: &quot;Face-to-face Onboarding&quot;,&#xd;
+    &quot;missed_payment&quot;: &quot;5&quot;,&#xd;
+    &quot;industry&quot;: &quot;Business&quot;,&#xd;
+    &quot;incorporation&quot;: &quot;10&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Api-Key ${__P(shared_api)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Org</stringProp>
+                <stringProp name="Header.value">${org}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
               <url>true</url>
               <threadCounts>true</threadCounts>
               <idleTime>true</idleTime>
